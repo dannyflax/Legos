@@ -201,34 +201,6 @@ public class NewGame implements GLEventListener, KeyListener {
 		
 		
 		lego = new ModelControl();
-		
-		try {
-			lego.loadModelData("resources/Lego.obj");
-		} catch (IOException ex) {
-			Logger.getLogger(NewGame.class.getName()).log(
-					Level.SEVERE, null, ex);
-		}
-		
-		Robot r = null;
-		try {
-			r = new Robot();
-		} catch (AWTException e2) {
-			e2.printStackTrace();
-		}
-		if (r != null) {
-			r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-		}
-	
-		BufferedImage cursorImg = new BufferedImage(16, 16,
-				BufferedImage.TYPE_INT_ARGB);
-	
-		// Create a new blank cursor.
-		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-				cursorImg, new Point(0, 0), "blank cursor");
-		frame.setCursor(blankCursor);
-		p_mpos = MouseInfo.getPointerInfo().getLocation();		
-		
-		
 	}
 
 	
@@ -270,29 +242,7 @@ public class NewGame implements GLEventListener, KeyListener {
 				posY -= moveIncrement;
 			}
 		
-			if (controlled) {
-				c_mpos = MouseInfo.getPointerInfo().getLocation();
-				int xdif = c_mpos.x - p_mpos.x;
-				int ydif = c_mpos.y - p_mpos.y;
-				lookUpAngle += (ydif / 5.0);
-				
-				if ((lookUpAngle <= lookUpMax || lookUpAngle >= lookUpMin)) {
-					lookUpAngle -= (ydif / 5.0);
-				}
-		
-				headingY -= (xdif / 5.0);
-		
-				Robot r = null;
-				try {
-					r = new Robot();
-				} catch (AWTException e2) {
-					e2.printStackTrace();
-				}
-				if (r != null) {
-					r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-				}
-			}
-		
+			
 		
 		/**
 		 * Drawing code
@@ -318,6 +268,9 @@ public class NewGame implements GLEventListener, KeyListener {
 		
 		gl.glUseProgram(standardShaderNoTx);
 
+		int color = gl.glGetUniformLocation(standardShaderNoTx,"color2");
+		gl.glUniform4f(color, 1.0f, 0.0f, 0.0f, 0.0f);
+		
 		lego.drawModel(new Vertex(0.0f,5.0f,0.0f), gl, 0.0f);
 
 		
@@ -377,9 +330,6 @@ public class NewGame implements GLEventListener, KeyListener {
 		BufferedImage bufferedImage = null;
 		int w = 0;
 		int h = 0;
-//		URL u = MicroSimulation.class.getResource(txt);
-		
-		
 		
 		try {
 			FileInputStream fStream = new FileInputStream(new File(txt));
@@ -471,48 +421,13 @@ public class NewGame implements GLEventListener, KeyListener {
 		Graphics2D g = (Graphics2D) img.getGraphics();
 		g.setColor(component.getForeground());
 		g.setFont(component.getFont());
-		//Q WUZ HERE LOLOLOLOLOL
+
 		component.paintAll(g);
 		if (region == null) {
 			region = new Rectangle(0, 0, img.getWidth(), img.getHeight());
 		}
 		return img.getSubimage(region.x, region.y, region.width, region.height);
 	}
-	
-	public void restoreControl(){
-		frame.setCursor(Cursor.getDefaultCursor());
-
-		Robot r = null;
-		try {
-			r = new Robot();
-		} catch (AWTException e2) {
-			
-			e2.printStackTrace();
-		}
-		if (r != null) {
-
-			r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-
-		}
-
-		p_mpos = MouseInfo.getPointerInfo().getLocation();
-
-		controlled = false;
-	}
-	
-	public void stripControl(){
-		BufferedImage cursorImg = new BufferedImage(16, 16,
-				BufferedImage.TYPE_INT_ARGB);
-
-		// Create a new blank cursor.
-		Cursor blankCursor = Toolkit.getDefaultToolkit()
-				.createCustomCursor(cursorImg, new Point(0, 0),
-						"blank cursor");
-		frame.setCursor(blankCursor);
-		controlled = true;
-	}
-
-	
 	
 
 	// ----- Implement methods declared in KeyListener -----
@@ -522,13 +437,6 @@ public class NewGame implements GLEventListener, KeyListener {
 		switch (e.getKeyCode()) {
 		case VK_SPACE:
 			System.out.println("X: "+posX+", Y: "+posY+", Z: "+posZ+", HeadingY: " + headingY + ", Look up angle: " + lookUpAngle);
-			break;
-		case VK_F1:
-			if (controlled) {
-				restoreControl();
-			} else {
-				stripControl();
-			}
 			break;
 		case VK_ESCAPE:
 			frame.dispose();
