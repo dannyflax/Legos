@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="data" path="data"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/gluegen-rt-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/gluegen-rt-natives-windows-amd64.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/gluegen-rt-natives-windows-i586.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/gluegen.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/jogl-all-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/jogl-all-natives-windows-amd64.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/jogl-all-natives-windows-i586.jar"/>
+	<classpathentry kind="lib" path="/JOGL/jogamp-all-platforms/jar/jogl-all.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/dannyflax/Downloads/jfreechart-1.0.19/lib/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="/Users/dannyflax/Downloads/jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="/Users/dannyflax/Downloads/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="/Users/dannyflax/Downloads/jfreechart-1.0.19/lib/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="/Users/dannyflax/Downloads/jfreechart-1.0.19/lib/servlet.jar"/>
+	<classpathentry kind="lib" path="/JOGL_Utils/jar/JOGL_Utils.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
