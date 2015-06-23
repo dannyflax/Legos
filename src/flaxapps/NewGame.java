@@ -1,8 +1,11 @@
 package flaxapps;
 
-import static java.awt.event.KeyEvent.VK_ESCAPE; 
-import static java.awt.event.KeyEvent.VK_F1;
+import static java.awt.event.KeyEvent.VK_DOWN;
+import static java.awt.event.KeyEvent.VK_ESCAPE;
+import static java.awt.event.KeyEvent.VK_LEFT;
+import static java.awt.event.KeyEvent.VK_RIGHT;
 import static java.awt.event.KeyEvent.VK_SPACE;
+import static java.awt.event.KeyEvent.VK_UP;
 import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_DEPTH_TEST;
@@ -14,19 +17,15 @@ import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 
-import java.awt.AWTException;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.color.ColorSpace;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -62,14 +61,17 @@ import flaxapps.jogl_util.Vertex;
  * @author Danny Flax
  */
 
-public class NewGame implements GLEventListener, KeyListener {
+public class NewGame implements GLEventListener, KeyListener, java.awt.event.MouseListener{
 
 	
 	private static String TITLE = "Game Template";
-	private static int CANVAS_WIDTH = 640; // width of the drawable
+	private static int CANVAS_WIDTH = 600; // width of the drawable
 	private static int CANVAS_HEIGHT = 700; // height of the drawable
 	private static final int FPS = 100; // animator's target frames per second
 	final static JFrame frame = new JFrame();
+	
+	double matModelView[] = new double[16], matProjection[] = new double[16]; 
+	int viewport[] = new int[4]; 
 	
 	public static JPanel mainPanel;
 	
@@ -106,9 +108,9 @@ public class NewGame implements GLEventListener, KeyListener {
 	
 	
 	// x and z position of the player, y is 0
-	public float posX = 3.2f;
-	public float posZ = 22.6f;
-	public float posY = 7;
+	public float posX = 0.0f;
+	public float posZ = 0.0f;
+	public float posY = 0.0f;
 
 	public float headingY = 0; // heading of player, about y-axis
 	public float lookUpAngle = 0.0f;
@@ -121,10 +123,6 @@ public class NewGame implements GLEventListener, KeyListener {
 	/** The entry main() method */
 	public static void main(String[] args) {
 		
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		CANVAS_WIDTH = screenSize.width;
-		CANVAS_HEIGHT = screenSize.height;
-		
 		// Create the OpenGL rendering canvas
 		canvas = new GLCanvas(); // heavy-weight GLCanvas
 
@@ -133,6 +131,7 @@ public class NewGame implements GLEventListener, KeyListener {
 		canvas.addGLEventListener(renderer);
 
 		canvas.addKeyListener(renderer);
+		canvas.addMouseListener(renderer);
 		
 		canvas.setFocusable(true);
 
@@ -140,10 +139,6 @@ public class NewGame implements GLEventListener, KeyListener {
 
 		// Create a animator that drives canvas' display() at the specified FPS.
 		final FPSAnimator animator = new FPSAnimator(canvas, FPS, true);
-
-		// Create the top-level container frame
-		// Swing's JFrame or AWT's Frame
-		frame.setUndecorated(true);
 		
 		frame.getContentPane().add(canvas);
 		
@@ -163,8 +158,6 @@ public class NewGame implements GLEventListener, KeyListener {
 		});
 		frame.setTitle(TITLE);
 		frame.pack();
-		
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
 		frame.setVisible(true);
 		animator.start(); // start the animation loop
@@ -209,90 +202,48 @@ public class NewGame implements GLEventListener, KeyListener {
 					Level.SEVERE, null, ex);
 		}
 		
-		Robot r = null;
-		try {
-			r = new Robot();
-		} catch (AWTException e2) {
-			e2.printStackTrace();
-		}
-		if (r != null) {
-			r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-		}
-	
-		BufferedImage cursorImg = new BufferedImage(16, 16,
-				BufferedImage.TYPE_INT_ARGB);
-	
-		// Create a new blank cursor.
-		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-				cursorImg, new Point(0, 0), "blank cursor");
-		frame.setCursor(blankCursor);
-		p_mpos = MouseInfo.getPointerInfo().getLocation();		
-		
-		
 	}
 
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
 				
-			/**
-			 * Initial control logic
-			 */
-			if (up) {
-				posX -= (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
-			}
-			if (down) {
-				// Player move out, posX and posZ become bigger
-				posX += (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
-				posZ += (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
-			}
-			if (left) {
-				// Player move out, posX and posZ become bigger
-				posX -= (float) Math.sin(Math.toRadians(headingY + 90.0))
-						* moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY + 90.0))
-						* moveIncrement;
-			}
-			if (right) {
-				// Player move out, posX and posZ become bigger
-				posX -= (float) Math.sin(Math.toRadians(headingY - 90.0))
-						* moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY - 90.0))
-						* moveIncrement;
-			}
+		/**
+		 * Initial control logic
+		 */
+		if (up) {
+			posX -= (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
+		}
+		if (down) {
+			// Player move out, posX and posZ become bigger
+			posX += (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
+			posZ += (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
+		}
+		if (left) {
+			// Player move out, posX and posZ become bigger
+			posX -= (float) Math.sin(Math.toRadians(headingY + 90.0))
+					* moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY + 90.0))
+					* moveIncrement;
+		}
+		if (right) {
+			// Player move out, posX and posZ become bigger
+			posX -= (float) Math.sin(Math.toRadians(headingY - 90.0))
+					* moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY - 90.0))
+					* moveIncrement;
+		}
+		
+		if (U){
+			posY += moveIncrement;
+		}
+		
+		if (J){
+			posY -= moveIncrement;
+		}
+		
 			
-			if (U){
-				posY += moveIncrement;
-			}
-			
-			if (J){
-				posY -= moveIncrement;
-			}
-		
-			if (controlled) {
-				c_mpos = MouseInfo.getPointerInfo().getLocation();
-				int xdif = c_mpos.x - p_mpos.x;
-				int ydif = c_mpos.y - p_mpos.y;
-				lookUpAngle += (ydif / 5.0);
-				
-				if ((lookUpAngle <= lookUpMax || lookUpAngle >= lookUpMin)) {
-					lookUpAngle -= (ydif / 5.0);
-				}
-		
-				headingY -= (xdif / 5.0);
-		
-				Robot r = null;
-				try {
-					r = new Robot();
-				} catch (AWTException e2) {
-					e2.printStackTrace();
-				}
-				if (r != null) {
-					r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-				}
-			}
-		
 		
 		/**
 		 * Drawing code
@@ -302,6 +253,8 @@ public class NewGame implements GLEventListener, KeyListener {
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color
 																// and depth
 																// buffers
+		
+		
 		gl.glLoadIdentity(); // reset the model-view matrix
 		gl.glEnable(GL.GL_TEXTURE_2D);
 		
@@ -316,9 +269,23 @@ public class NewGame implements GLEventListener, KeyListener {
 		
 		gl.glTranslatef(-posX, -posY, -posZ);
 		
+		gl.glGetDoublev( GL2.GL_MODELVIEW_MATRIX, matModelView, 0); 
+		gl.glGetDoublev( GL2.GL_PROJECTION_MATRIX, matProjection, 0); 
+		gl.glGetIntegerv( GL2.GL_VIEWPORT, viewport, 0); 
+		
 		gl.glUseProgram(standardShaderNoTx);
 
-		lego.drawModel(new Vertex(0.0f,5.0f,0.0f), gl, 0.0f);
+		int color = gl.glGetUniformLocation(standardShaderNoTx,"color2");
+		gl.glUniform4f(color, 1.0f, 0.0f, 0.0f, 0.0f);
+		
+		float r = 5.0f;
+		
+//		lego.drawModel(new Vertex(0.0f,0.0f,r), gl, 0.0f);
+//		lego.drawModel(new Vertex(0.0f,0.0f,-r), gl, 0.0f);
+		lego.drawModel(new Vertex(r,0.0f,0.0f), gl, 0.0f);
+//		lego.drawModel(new Vertex(-r,0.0f,0.0f), gl, 0.0f);
+//		lego.drawModel(new Vertex(0.0f,-r,0.0f), gl, 0.0f);
+//		lego.drawModel(new Vertex(0.0f,r,0.0f), gl, 0.0f);
 
 		
 		/** Cleanup code **/
@@ -377,9 +344,6 @@ public class NewGame implements GLEventListener, KeyListener {
 		BufferedImage bufferedImage = null;
 		int w = 0;
 		int h = 0;
-//		URL u = MicroSimulation.class.getResource(txt);
-		
-		
 		
 		try {
 			FileInputStream fStream = new FileInputStream(new File(txt));
@@ -471,48 +435,13 @@ public class NewGame implements GLEventListener, KeyListener {
 		Graphics2D g = (Graphics2D) img.getGraphics();
 		g.setColor(component.getForeground());
 		g.setFont(component.getFont());
-		//Q WUZ HERE LOLOLOLOLOL
+
 		component.paintAll(g);
 		if (region == null) {
 			region = new Rectangle(0, 0, img.getWidth(), img.getHeight());
 		}
 		return img.getSubimage(region.x, region.y, region.width, region.height);
 	}
-	
-	public void restoreControl(){
-		frame.setCursor(Cursor.getDefaultCursor());
-
-		Robot r = null;
-		try {
-			r = new Robot();
-		} catch (AWTException e2) {
-			
-			e2.printStackTrace();
-		}
-		if (r != null) {
-
-			r.mouseMove(frame.getWidth() / 2, frame.getHeight() / 2);
-
-		}
-
-		p_mpos = MouseInfo.getPointerInfo().getLocation();
-
-		controlled = false;
-	}
-	
-	public void stripControl(){
-		BufferedImage cursorImg = new BufferedImage(16, 16,
-				BufferedImage.TYPE_INT_ARGB);
-
-		// Create a new blank cursor.
-		Cursor blankCursor = Toolkit.getDefaultToolkit()
-				.createCustomCursor(cursorImg, new Point(0, 0),
-						"blank cursor");
-		frame.setCursor(blankCursor);
-		controlled = true;
-	}
-
-	
 	
 
 	// ----- Implement methods declared in KeyListener -----
@@ -523,12 +452,17 @@ public class NewGame implements GLEventListener, KeyListener {
 		case VK_SPACE:
 			System.out.println("X: "+posX+", Y: "+posY+", Z: "+posZ+", HeadingY: " + headingY + ", Look up angle: " + lookUpAngle);
 			break;
-		case VK_F1:
-			if (controlled) {
-				restoreControl();
-			} else {
-				stripControl();
-			}
+		case VK_LEFT:
+			headingY+=5;
+			break;
+		case VK_RIGHT:
+			headingY-=5;
+			break;
+		case VK_DOWN:
+			lookUpAngle+=5;
+			break;
+		case VK_UP:
+			lookUpAngle-=5;
 			break;
 		case VK_ESCAPE:
 			frame.dispose();
@@ -550,6 +484,59 @@ public class NewGame implements GLEventListener, KeyListener {
 
 		}
 	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		double[] startPos = new double[3];
+		double[] endPos = new double[3];
+		
+		int x = arg0.getX();
+		int y = arg0.getY();
+		
+		double winX = (double)x; 
+		double winY = viewport[3] - (double)y; 
+		
+		GLU glu = new GLU();
+
+		
+		
+		glu.gluUnProject(winX, winY, 0.0, matModelView, 0, matProjection, 0, viewport, 0, startPos, 0); 
+		
+		glu.gluUnProject(winX, winY, 100.0, matModelView, 0, matProjection, 0, viewport, 0, endPos, 0); 
+			
+		Vertex start = new Vertex((float)startPos[0],(float)startPos[1],(float)startPos[2]);
+		Vertex end = new Vertex((float)endPos[0],(float)endPos[1],(float)endPos[2]);
+		
+		Vertex goal = new Vertex(5.0f,0.0f,0.0f);
+		
+		Vertex v1 = Vertex.add(goal, Vertex.scalar(start, -1.0f));
+		Vertex v2 = Vertex.add(end, Vertex.scalar(start, -1.0f));
+		double dot1 = Vertex.dot(v1, v2);
+		double dot2 = Vertex.dot(v1, v1);
+		double proj = dot2/dot1;
+		
+		Vertex closest = Vertex.add(start, Vertex.scalar(v2, (float)proj));
+		
+		System.out.println("Distance: "+Vertex.distance(closest, goal));
+	}
+
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {}
+
+	
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {}
+
+
+
 }
 
 
