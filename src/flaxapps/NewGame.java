@@ -1,7 +1,8 @@
 package flaxapps;
 
-import static java.awt.event.KeyEvent.VK_ESCAPE; 
-import static java.awt.event.KeyEvent.VK_F1;
+import static java.awt.event.KeyEvent.VK_ESCAPE;
+import static java.awt.event.KeyEvent.VK_UP;
+import static java.awt.event.KeyEvent.VK_LEFT;
 import static java.awt.event.KeyEvent.VK_SPACE;
 import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
@@ -14,15 +15,11 @@ import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 
-import java.awt.AWTException;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.color.ColorSpace;
 import java.awt.event.KeyEvent;
@@ -39,8 +36,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
@@ -106,9 +101,9 @@ public class NewGame implements GLEventListener, KeyListener {
 	
 	
 	// x and z position of the player, y is 0
-	public float posX = 3.2f;
-	public float posZ = 22.6f;
-	public float posY = 7;
+	public float posX = 0.0f;
+	public float posZ = 0.0f;
+	public float posY = 0.0f;
 
 	public float headingY = 0; // heading of player, about y-axis
 	public float lookUpAngle = 0.0f;
@@ -207,40 +202,40 @@ public class NewGame implements GLEventListener, KeyListener {
 	@Override
 	public void display(GLAutoDrawable drawable) {
 				
-			/**
-			 * Initial control logic
-			 */
-			if (up) {
-				posX -= (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
-			}
-			if (down) {
-				// Player move out, posX and posZ become bigger
-				posX += (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
-				posZ += (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
-			}
-			if (left) {
-				// Player move out, posX and posZ become bigger
-				posX -= (float) Math.sin(Math.toRadians(headingY + 90.0))
-						* moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY + 90.0))
-						* moveIncrement;
-			}
-			if (right) {
-				// Player move out, posX and posZ become bigger
-				posX -= (float) Math.sin(Math.toRadians(headingY - 90.0))
-						* moveIncrement;
-				posZ -= (float) Math.cos(Math.toRadians(headingY - 90.0))
-						* moveIncrement;
-			}
-			
-			if (U){
-				posY += moveIncrement;
-			}
-			
-			if (J){
-				posY -= moveIncrement;
-			}
+		/**
+		 * Initial control logic
+		 */
+		if (up) {
+			posX -= (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
+		}
+		if (down) {
+			// Player move out, posX and posZ become bigger
+			posX += (float) Math.sin(Math.toRadians(headingY)) * moveIncrement;
+			posZ += (float) Math.cos(Math.toRadians(headingY)) * moveIncrement;
+		}
+		if (left) {
+			// Player move out, posX and posZ become bigger
+			posX -= (float) Math.sin(Math.toRadians(headingY + 90.0))
+					* moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY + 90.0))
+					* moveIncrement;
+		}
+		if (right) {
+			// Player move out, posX and posZ become bigger
+			posX -= (float) Math.sin(Math.toRadians(headingY - 90.0))
+					* moveIncrement;
+			posZ -= (float) Math.cos(Math.toRadians(headingY - 90.0))
+					* moveIncrement;
+		}
+		
+		if (U){
+			posY += moveIncrement;
+		}
+		
+		if (J){
+			posY -= moveIncrement;
+		}
 		
 			
 		
@@ -258,11 +253,11 @@ public class NewGame implements GLEventListener, KeyListener {
 		/** Initial camera adjustment code **/
 		
 		// Rotate up and down to look up and down
-		gl.glRotatef(lookUpAngle, 1.0f, 0, 0);
+//		gl.glRotatef(lookUpAngle, 1.0f, 0, 0);
 		// Player at headingY. Rotate the scene by -headingY instead (add 360 to
 		// get a
 		// positive angle)
-		gl.glRotatef(360.0f - headingY, 0, 1.0f, 0);
+//		gl.glRotatef(360.0f - headingY, 0, 1.0f, 0);
 		
 		gl.glTranslatef(-posX, -posY, -posZ);
 		
@@ -271,7 +266,12 @@ public class NewGame implements GLEventListener, KeyListener {
 		int color = gl.glGetUniformLocation(standardShaderNoTx,"color2");
 		gl.glUniform4f(color, 1.0f, 0.0f, 0.0f, 0.0f);
 		
-		lego.drawModel(new Vertex(0.0f,5.0f,0.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(0.0f,0.0f,1.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(0.0f,0.0f,-1.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(1.0f,0.0f,0.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(-1.0f,0.0f,0.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(0.0f,-1.0f,0.0f), gl, 0.0f);
+		lego.drawModel(new Vertex(0.0f,1.0f,0.0f), gl, 0.0f);
 
 		
 		/** Cleanup code **/
@@ -437,6 +437,12 @@ public class NewGame implements GLEventListener, KeyListener {
 		switch (e.getKeyCode()) {
 		case VK_SPACE:
 			System.out.println("X: "+posX+", Y: "+posY+", Z: "+posZ+", HeadingY: " + headingY + ", Look up angle: " + lookUpAngle);
+			break;
+		case VK_LEFT:
+			headingY+=5;
+			break;
+		case VK_UP:
+			lookUpAngle+=5;
 			break;
 		case VK_ESCAPE:
 			frame.dispose();
